@@ -1,0 +1,35 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+    volumes:
+      - .:/usr/src/app
+    env_file:
+      - .env
+    extra_hosts:
+      - 'serverless-demo.loc:0.0.0.0'
+    ports:
+      - 3000:3000
+    labels:
+      com.dnsdock.alias: serverless-demo.loc
+    depends_on:
+      - dynamodb
+  dynamodb:
+    image: amazon/dynamodb-local
+    ports:
+      - 8000:8000
+    working_dir: /home/dynamodblocal
+    command: "-jar DynamoDBLocal.jar -sharedDb"
+  dynamoclient:
+    image: aaronshaf/dynamodb-admin
+    environment:
+      - DYNAMO_ENDPOINT=http://dynamodb:8000
+    ports:
+      - 8001:8001
+    extra_hosts:
+    - 'db.serverless-demo.loc:0.0.0.0'
+    labels:
+      com.dnsdock.alias: db.serverless-demo.loc
+    depends_on:
+      - dynamodb

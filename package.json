@@ -1,0 +1,50 @@
+{
+  "name": "serverless-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "jest --verbose --runInBand",
+    "test-coverage": "jest --coverage=true",
+    "test-update-snap": "jest --updateSnapshot",
+    "lint": "eslint ./app",
+    "lint-fix": "eslint ./app --fix",
+    "offline": "npx serverless offline start --noPrependStageInUrl",
+    "deploy": "npx serverless deploy --stage ${1}",
+    "delete": "npx serverless remove --stage ${1}",
+    "create-cert": "npx serverless create-cert --stage ${1}",
+    "delete-cert": "npx serverless remove-cert --stage ${1}",
+    "deploy-function": "npx serverless deploy function -f trigger-file --stage ${1}"
+  },
+  "keywords": [],
+  "author": "sparkfabrik",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "aws-sdk": "^2.936.0",
+    "babel-jest": "^27.0.6",
+    "babel-plugin-rewire": "^1.2.0",
+    "eslint": "^7.27.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.23.2",
+    "eslint-plugin-jest": "^24.3.6",
+    "eslint-plugin-prefer-arrow": "^1.2.3",
+    "eslint-plugin-prettier": "^3.4.0",
+    "jest": "^26.6.3",
+    "jest-aws-sdk-mock": "^1.0.2",
+    "nock": "^13.2.1",
+    "prettier": "^2.3.0",
+    "serverless": "^3",
+    "serverless-certificate-creator": "^1",
+    "serverless-cloudfront-plugin": "0.2.5",
+    "serverless-domain-manager": "^6",
+    "serverless-offline": "^8",
+    "serverless-plugin-resource-tagging": "^1",
+    "serverless-webpack": "^5",
+    "webpack": "^5",
+    "webpack-node-externals": "^3.0.0"
+  }
+}

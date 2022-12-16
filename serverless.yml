@@ -1,0 +1,111 @@
+service: serverless-demo
+useDotenv: true
+plugins:
+  - serverless-cloudfront-plugin
+  - serverless-offline
+  - serverless-plugin-resource-tagging
+  - serverless-webpack
+provider:
+  name: aws
+  region: ${env:AWS_DEFAULT_REGION}
+  stage: ${opt:stage, 'local'}
+  runtime: nodejs14.x
+  architecture: arm64
+  memorySize: 128
+  timeout: 30
+  logRetentionInDays: 7
+  environment:
+    APP_ENV: ${opt:stage, 'local'}
+    DYNAMODB_USERS_TABLE: "Users-${self:provider.stage}"
+    DYNAMODB_FILES_TABLE: "Files-${self:provider.stage}"
+    USERS_BUCKET: "demo-users-nino"
+    FILES_BUCKET: "demo-files-nino"
+  stackTags:
+    Project: "${self:service}"
+    Environment: "${opt:stage, 'local'}"
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:DescribeTable
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+          Resource:
+            - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_USERS_TABLE}
+            - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.DYNAMODB_FILES_TABLE}
+
+        - Effect: Allow
+          Action:
+            - "s3:GetObject"
+          Resource: "*"
+
+functions:
+  app:
+    handler: app/index.handler
+    events:
+      - http:
+          path: /user/{userId}
+          method: GET
+          cors: true
+  create-user:
+    handler: app/post.handler
+    events:
+      - http:
+          path: /user/create
+          method: POST
+          cors: true
+  trigger-file:
+    handler: app/trigger.handler
+
+resources:
+  Resources:
+    Users:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.DYNAMODB_USERS_TABLE}
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    UsersBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.USERS_BUCKET}
+    Files:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.DYNAMODB_FILES_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: file
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+          - AttributeName: file
+            KeyType: HASH
+
+    FilesBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.FILES_BUCKET}
+
+custom:
+  basePath:
+    local: ""
+    francesco: "francesco"
+    nino: "nino"
+    antonio: "antonio"
+  serverless-offline:
+    host: 0.0.0.0
+  webpack:
+    webpackConfig: "./webpack.config.js"
+    includeModules: true
+    packager: "yarn"
+    excludeFiles: app/**/*.test.js
