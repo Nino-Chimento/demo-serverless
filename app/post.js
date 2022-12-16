@@ -11,6 +11,7 @@ exports.handler = async (event, context) => {
     migrated: true,
   };
   const client = dynamodb.getClient();
+
   const params = {
     TableName: process.env.DYNAMODB_USERS_TABLE,
     Item: user,
